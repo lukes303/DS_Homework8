@@ -215,6 +215,28 @@ public:
 	void PrintChain(int key);
 };
 
+// Hash
+int HashTable::hash(int key){
+	return key % size;
+}
+
+//Create Table
+void HashTable::CreateTable(int divisor){
+	size = divisor;
+	table = new Node[size];
+}
+
+//Search
+int HashTable::Search(int key){
+	int hashedKey = hash(key);
+
+	if(table[hashedKey].Get_key() == key){
+		return hashedKey;
+	}
+
+	//FIX ME add search for coelesed chained
+	return -1;
+}
 
 // This is the constructor. 
 // It is defined for you. 

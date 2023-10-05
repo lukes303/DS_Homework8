@@ -224,6 +224,12 @@ int HashTable::hash(int key){
 void HashTable::CreateTable(int divisor){
 	size = divisor;
 	table = new Node[size];
+
+	//Assign nodes with -1 as key to indicate empty space
+	for(int i = 0; i < size; i++){
+		Node temp;
+		table[i] = temp;
+	}
 }
 
 //Search
@@ -237,6 +243,46 @@ int HashTable::Search(int key){
 	//FIX ME add search for coelesed chained
 	return -1;
 }
+
+// This function adds a student to the hash 
+// table. Note the input is an object instead
+// of a pointer. We cannot directly assign 
+// an object to another, but have to assign 
+// the member variables one by one. 
+// (You can create a "copy" function for the 
+// Node class to facilitate object assignment, 
+// but the essential process should be the same.) 
+// 
+// In addition, the add function should apply 
+// linear probing to look for an empty cell 
+// for a collided object with key = t. Probing 
+// should start from table[h(t)].(Not the 
+// tail of the chain.)  
+void HashTable::Add(Node temp){
+
+	//Create new node
+	Node tempCopy;
+
+	//Copy data from temp
+	tempCopy.Set_key(temp.Get_key());
+
+	//Get hashed key
+	int hashedKey = hash(tempCopy.Get_key());
+
+	//Add node at table[hashedKey] if it is "empty"
+	if(table[hashedKey].Get_key() == -1){
+		table[hashedKey] = tempCopy;
+	}
+	//If space is not empty, proceed with chaining,
+	//Find the current tail of the chain
+
+
+	
+	
+}
+
+
+
 
 // This is the constructor. 
 // It is defined for you. 

@@ -232,32 +232,34 @@ void HashTable::CreateTable(int divisor){
 	}
 }
 
-//Search
+// Search
 int HashTable::Search(int key){
 	int hashedKey = hash(key);
 
-	if(table[hashedKey].Get_key() == key){
-		return hashedKey;
+	//Return Node at table[hahsedKey] if it matches given key
+	if(table[hashedKey].Get_key() == key) return hashedKey;
+	//If it does not, there was a collision here, search chain
+	else{
+		//Chain index is the inex for traversing chain
+		int chainIndex = table[hashedKey].Get_index();
+		//Run loop while chainIndex does nor equal -1
+		while(chainIndex != -1){
+			//Return chainIndex if we find our key
+			if(table[chainIndex].Get_key() == key){
+				return chainIndex;
+				break;
+			}
+			//update chainIndex to current nodes next index
+			chainIndex = table[chainIndex].Get_index();
+		}
+
+		//If code reaches here, key was not found, and chain index should equal -1
+		return chainIndex;
 	}
 
-	//FIX ME add search for coelesed chained
-	return -1;
 }
 
-// This function adds a student to the hash 
-// table. Note the input is an object instead
-// of a pointer. We cannot directly assign 
-// an object to another, but have to assign 
-// the member variables one by one. 
-// (You can create a "copy" function for the 
-// Node class to facilitate object assignment, 
-// but the essential process should be the same.) 
-// 
-// In addition, the add function should apply 
-// linear probing to look for an empty cell 
-// for a collided object with key = t. Probing 
-// should start from table[h(t)].(Not the 
-// tail of the chain.)  
+// Add
 void HashTable::Add(Node temp){
 
 	//Create new node
@@ -270,18 +272,62 @@ void HashTable::Add(Node temp){
 	int hashedKey = hash(tempCopy.Get_key());
 
 	//Add node at table[hashedKey] if it is "empty"
-	if(table[hashedKey].Get_key() == -1){
-		table[hashedKey] = tempCopy;
-	}
+	if(table[hashedKey].Get_key() == -1) table[hashedKey] = tempCopy;
+
 	//If space is not empty, proceed with chaining,
-	//Find the current tail of the chain
+	else{
+		//Find the current tail of the chain
+		Node* tail = &table[hashedKey];
+		int nextIndex;
 
+		while(tail->Get_index() != -1){
+			nextIndex = tail->Get_index();
+			tail = &table[nextIndex];
+		}
 
-	
-	
+		//Linear probing
+		int i;
+		bool foundSpace = false;
+
+		for(i = hashedKey; i < size; i++){
+			//If empty space is found
+			if(table[i].Get_key() == -1){
+				//Assign node
+				table[i] = tempCopy;
+				//Flag space as found
+				foundSpace = true;
+				//Set tail index 
+				tail->Set_index(i);
+				break;
+			}
+		}
+		//Wraparound
+		for(i = 0; i < hashedKey; i++){
+			//If empty space is found
+			if(table[i].Get_key() == -1){
+				//Assign node
+				table[i] = tempCopy;
+				//Flag space as found
+				foundSpace = true;
+				//Set tail index 
+				tail->Set_index(i);
+				break;
+			}
+		}
+		//TODO resize if no empty space
+		if(!foundSpace){ 
+
+		}
+	}
+
 }
 
+// This function removes a student whose 
+// SID = key from the table. If the student 
+// is not in the table, it does nothing. 
+void HashTable::Remove(int key){
 
+}
 
 
 // This is the constructor. 

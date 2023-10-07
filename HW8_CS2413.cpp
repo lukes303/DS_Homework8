@@ -234,97 +234,85 @@ void HashTable::CreateTable(int divisor){
 	}
 }
 
-// Search
+// This function searchs for a student 
+// whose SID = key. If a student is found, 
+// return index of the student in the table. 
+// Otherwise, return -1.
 int HashTable::Search(int key) {
-    int index = hash(key); // Calculate the initial index using the hash function
-    int originalIndex = index;
-
-    //Linear probing to search for the key
-    while (table[index].Get_key() != key) {
-		//If we get an empty slot or have checked all slots without finding the key, it means the key is not in the table.
-        if (table[index].Get_key() == -1 || index == originalIndex) {
-            return -1;
-        }
-		//Move to the next slot using modulo to wrap around
-        index = (index + 1) % size; 
-    }
-
-    // We found the key at the current index
-    return index;
+    
 }
 
 //Resize
 void HashTable::Resize() {
-    int newSize = size * 2; // Double the size
-    Node* newTable = new Node[newSize];
-
-    // Rehash all existing elements into the new table
-    for (int i = 0; i < size; ++i) {
-        if (table[i].Get_key() != -1) {
-            int newIndex = hash(table[i].Get_key());
-            while (newTable[newIndex].Get_key() != -1) {
-                newIndex = (newIndex + 1) % newSize; // Linear probing in the new table
-            }
-            newTable[newIndex] = table[i];
-        }
-    }
-
-    // Clean up the old table and update the size
-    delete[] table;
-    table = newTable;
-    size = newSize;
+    
 }
 
-// Add
+// This function adds a student to the hash 
+// table. Note the input is an object instead
+// of a pointer. We cannot directly assign 
+// an object to another, but have to assign 
+// the member variables one by one. 
+// (You can create a "copy" function for the 
+// Node class to facilitate object assignment, 
+// but the essential process should be the same.) 
+// 
+// In addition, the add function should apply 
+// linear probing to look for an empty cell 
+// for a collided object with key = t. Probing 
+// should start from table[h(t)].(Not the 
+// tail of the chain.)  
 void HashTable::Add(Node temp) {
-    int key = temp.Get_key();
-    int index = hash(key); // Calculate the initial index using the hash function
-    int originalIndex = index;
+	
+	int hashedKey = hash(temp.Get_key());
+	int tableIndex = hashedKey;
+	int chainIndex = hashedKey;
 
-    // Linear probing to find an empty slot
-    while (table[index].Get_key() != -1) {
-        index = (index + 1) % size; // Move to the next slot using modulo to wrap around
-        if (index == originalIndex) {
-            // If we have checked all slots and couldn't find an empty one, then the table is full. Call the Resize function.
-            Resize();
-            //continue adding the new Node
-            index = originalIndex;
-        }
-    }
+	//Place data here if table[hashedKey] is empty
+	if(table[hashedKey].Get_key() != -1){
+		table[hashedKey].Set_key(temp.Get_key());
+	}
+	 
+	//If it is not, start linear probing
+	else{
 
-    // We found an empty slot, so add the Node
-    table[index] = temp;
+		//Get tail of chain
+		if(table[hashedKey].Get_index() != -1){
+			chainIndex = table[hashedKey].Get_index();
+
+			while(chainIndex != -1){
+				chainIndex = table[chainIndex].Get_index();
+			}
+		}
+		//Chain index should now be at tail
+
+		bool foundSpace = false;
+		tableIndex++;
+
+		//Probe from hashedKey+1 to end of array
+		for(tableIndex; tableIndex < size; tableIndex++){
+			if(table[tableIndex].Get_key() == -1){
+				table[tableIndex].Set_key(temp.Get_key());
+				table[chainIndex].Set_index(tableIndex);
+				foundSpace = true;
+				break;
+			}
+		}
+
+
+		//If there is still no space, resize and rehash
+		if(!foundSpace){
+
+		}
+
+
+	}
 }
 
-//Remove
+// This function removes a student whose 
+// SID = key from the table. If the student 
+// is not in the table, it does nothing. 
 void HashTable::Remove(int key) {
-    int index = hash(key); // Calculate the initial index using the hash function
-
-    Node* currentNode = &table[index];
-    Node* prevNode = nullptr;
-
-    // Traverse the chain at the given index to find the key
-    while (currentNode != nullptr && currentNode->Get_key() != key) {
-        prevNode = currentNode;
-        currentNode = &table[currentNode->Get_index()];
-    }
-
-    if (currentNode != nullptr && currentNode->Get_key() == key) {
-        // Key found in the chain, remove it
-        if (prevNode == nullptr) {
-            // If it's the head of the chain, update the table slot
-            int nextIndex = currentNode->Get_index();
-            if (nextIndex != -1) {
-                table[index] = table[nextIndex];
-                table[nextIndex].Set_key(-1);
-            } else {
-                table[index].Set_key(-1); // If it's the only element in the chain
-            }
-        } else {
-            // If it's not the head, simply remove it by updating the previous node's idx_next
-            prevNode->Set_index(currentNode->Get_index());
-        }
-    }
+    
 }
 
 //Size

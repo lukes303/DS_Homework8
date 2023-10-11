@@ -160,6 +160,8 @@ public:
 	// Otherwise, return -1.
 	int Search(int key);
 
+	//Resize function
+	void Resize();
 
 	// This function adds a student to the hash 
 	// table. Note the input is an object instead
@@ -173,11 +175,9 @@ public:
 	// In addition, the add function should apply 
 	// linear probing to look for an empty cell 
 	// for a collided object with key = t. Probing 
-	// should start from table[h(t)]. (Not the 
+	// should start from table[h(t)].(Not the 
 	// tail of the chain.)  
 	void Add(Node temp);
-
-	void Resize();
 
 
 	// This function removes a student whose 
@@ -217,29 +217,17 @@ public:
 	void PrintChain(int key);
 };
 
-// This is the hash function "h". 
-// It takes "key" as input and returns 
-// a hash code h(key) = key % divisor.
+//Hash
 int HashTable::hash(int key){
 	return key % size;
 }
 
-// This function creates a hash table 
-// (through dynamic memory allocation)
-// and initializes all cells to NULL.
-// 
-// It should create a table of the 
-// smallest necessary size N, which 
-// depends on the input divisor 
-// (of the modulo hash function).
-// 
-// This function should also update 
-// the private variable "size" to N. 
+//Create Table
 void HashTable::CreateTable(int divisor){
 	size = divisor;
-
 	table = new Node[size];
 
+	//Assign nodes with -1 as key to indicate empty space
 	for(int i = 0; i < size; i++){
 		Node temp;
 		table[i] = temp;
@@ -250,8 +238,18 @@ void HashTable::CreateTable(int divisor){
 // whose SID = key. If a student is found, 
 // return index of the student in the table. 
 // Otherwise, return -1.
-int HashTable::Search(int key){
+int HashTable::Search(int key) {
+    
+}
 
+//Resize
+void HashTable::Resize() {
+	int oldSize = size;
+    size = size * 2;
+
+	Node* newTable = new Node[size];
+
+	
 }
 
 // This function adds a student to the hash 
@@ -266,75 +264,66 @@ int HashTable::Search(int key){
 // In addition, the add function should apply 
 // linear probing to look for an empty cell 
 // for a collided object with key = t. Probing 
-// should start from table[h(t)]. (Not the 
+// should start from table[h(t)].(Not the 
 // tail of the chain.)  
-void HashTable::Add(Node temp){
+void HashTable::Add(Node temp) {
 	
-	int hashedIndex = hash(temp.Get_key());
+	int hashedKey = hash(temp.Get_key());
+	int tableIndex = hashedKey;
+	int chainIndex = hashedKey;
 
-	//If cell is empty, add to table (change data)
-	if(table[hashedIndex].Get_key() == -1){
-		table[hashedIndex].Set_key(temp.Get_key());
+	//Place data here if table[hashedKey] is empty
+	if(table[hashedKey].Get_key() != -1){
+		table[hashedKey].Set_key(temp.Get_key());
 	}
-	//If not,proceed with probing
+	 
+	//If it is not, start linear probing
 	else{
-		int probeIndex = hashedIndex;
-		bool cellFound = false;
 
-		//Probe from hashedIndex to end of table
-		for(probeIndex; probeIndex < size; probeIndex++){
-			if(table[probeIndex].Get_key() == -1){
-				cellFound = true;
+		//Get tail of chain
+		if(table[hashedKey].Get_index() != -1){
+			chainIndex = table[hashedKey].Get_index();
+
+			while(chainIndex != -1){
+				chainIndex = table[chainIndex].Get_index();
+			}
+		}
+		//Chain index should now be at tail
+
+		bool foundSpace = false;
+		tableIndex++;
+
+		//Probe from hashedKey+1 to end of array
+		for(tableIndex; tableIndex < size; tableIndex++){
+			if(table[tableIndex].Get_key() == -1){
+				table[tableIndex].Set_key(temp.Get_key());
+				table[chainIndex].Set_index(tableIndex);
+				foundSpace = true;
 				break;
 			}
 		}
-		//If cell still not found, probe from beginning
-		if(!cellFound){
-			//Stop before hashedIndex
-			for(probeIndex = 0; probeIndex < hashedIndex; probeIndex++){
-				if(table[probeIndex].Get_key() == -1){
-					cellFound = true;
-					break;
-				}
-			}
+
+
+		//If there is still no space, resize and rehash
+		if(!foundSpace){
+
 		}
 
-		//If cell still not found, resize table;
-		if(!cellFound){
-			//TODO
-		}
 
-		//Empty cell should be found
-		table[probeIndex].Set_key(temp.Get_key());
-
-		//Find tail of current chain
-		
-		//Index of the Node at the current tail
-		int tailIndex;
-
-		//If the node's Get_index() is -1, this is the tail
-		if(table[hashedIndex].Get_index() == -1){
-			tailIndex = hashedIndex;
-		}
-		//If not, cycle through chain until tail is found
-		else{
-			
-			//Index for cycling through chain
-			int chainIndex = hashedIndex;
-			
-			while(table[chainIndex].Get_index() != -1){
-				chainIndex = table[chainIndex].Get_index();
-			}
-
-			//table[chainIndex] should now be at the tail, update tailIndex
-			tailIndex = chainIndex;
-		}
-
-		//Connect tail to collided node
-		table[tailIndex].Set_index(probeIndex);
 	}
 }
 
+// This function removes a student whose 
+// SID = key from the table. If the student 
+// is not in the table, it does nothing. 
+void HashTable::Remove(int key) {
+    
+}
+
+//Size
+int HashTable::Get_Size(){
+	return size;
+}
 
 // This is the constructor. 
 // It is defined for you. 
@@ -357,9 +346,9 @@ void HashTable::PrintTable() {
 // This is the 2nd print function. 
 // It is defined for you.
 // Do not modify it.
-void HashTable::PrintChain(int key) {
-	int temp = hash(key);
-	while (temp != -1) {
+void HashTable::PrintChain(int key_chain) {
+	int temp = hash(key_chain);
+	while (table[temp].Get_key() != -1) {
 		cout << table[temp].Get_key() << '\n';
 		temp = table[temp].Get_index();
 	}
@@ -399,7 +388,7 @@ int main()
 
 		Student.Set_key(temp);
 
-		x.Add(Student);
+		x.Add(Student); 
 	}
 
 	// Mode 0: test the "Add" function and 
@@ -412,7 +401,7 @@ int main()
 	}
 	// Mode 1: test if your chains are correct
 	else if (mode == 1) {
-		x.PrintChain(key_chain);
+		x.PrintChain(key_chain);	
 	}
 	// Mode 2: test the "Search" function 
 	else if (mode == 2) {
